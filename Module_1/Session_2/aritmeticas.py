@@ -24,7 +24,10 @@ def multiplicacion(a: int, b: int):
 #print(f"mult: {10} * {2} = {multiplicacion(10, 2)}")
 
 def division(a: int, b: int):
-    return int(a / b)
+    if b == 0:
+        return "Infinity"
+    else:
+        return int(a / b)
 
 #print(f"div:  {20} / {2} = {division(20, 2)}")
 
