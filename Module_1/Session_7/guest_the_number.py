@@ -2,44 +2,48 @@
 
 1. Jugar
 2. Puntuaciones
-3. Salir
+3. Creditos
+4. Salir
 
 si el usuario elije jugar, debera escoger la dificulta, que sera facil , medio y dificil. Dependiendo de la dificultad, se calculara el numero a hallar (Aleatoriamente) y si el numero esta por debajo del # a adivinar que diga que es too low y viceversa si es mayor."""
 
 import random
 import pyfiglet
+import os
+from tabulate import tabulate
 from enum import Enum
+from datetime import datetime
 
+#Encabezado inicial del juego.
+T = "Guest Your Number"
+head = pyfiglet.figlet_format(T, font="banner3", justify="center", width=110)
+print(head)
 
-class Dificultad(Enum):
-    FACIL = "facil"
-    MEDIO = "medio"
-    DIFICIL = "dificil"
+class Difficulty(Enum):
+    EASY = "easy"
+    MEDIUM = "medium"
+    HARD = "hard"
 
-class Menu(Enum):
-    JUGAR = "jugar"
+class MenuOption(Enum):
+    PLAY = "play"
     SCORES = "scores"
-    CREDITS = " credits"
-    OUT = "out"
+    CREDITS = "credits"
+    QUIT = "quit"
 
-class GuestYourNumer:
-    def __init__(self, dificultad: Dificultad) -> None:
-        
-        #Construyendo dificultad
-        if dificultad == Dificultad.FACIL:
-            self.number = random.randint(1,10)
-        elif dificultad == Dificultad.MEDIO:
-            self.number = random.randint(1,20)
-        elif dificultad == Dificultad.DIFICIL:
-            self.number = random.randint(1,30)
+class GuessYourNumber:
+    def __init__(self, difficulty: Difficulty) -> None:
+        self.difficulty = difficulty
+        if self.difficulty == Difficulty.EASY:
+            self.number = random.randint(1, 10)
+        elif self.difficulty == Difficulty.MEDIUM:
+            self.number = random.randint(1, 20)
+        elif self.difficulty == Difficulty.HARD:
+            self.number = random.randint(1, 30)
         else:
-            print("Error! try again.")
+            print("Error! Try again.")
 
-    #Metodo para correr el juego.
-    def run(self):
-
+    def run(self) -> None:
         trials = 0
-        #Flag variable
         win = False
     
         while not win:
@@ -53,70 +57,132 @@ class GuestYourNumer:
             else:
                 print("Too high")
         
-        print(f"You win with {trials} trials.")
+        print(f"You win with {trials} trials.")    
+        name = input("Enter your name: ")
+        score = trials
+        generate_scores_txt(name, score, self.difficulty)
 
-def obtain_difficulty():
-    
-    dificultad = {
-        "facil": Dificultad.FACIL,
-        "medio": Dificultad.MEDIO,
-        "dificil": Dificultad.DIFICIL
+
+def obtain_difficulty() -> Difficulty:
+    difficulty = {
+        "easy": Difficulty.EASY,
+        "medium": Difficulty.MEDIUM,
+        "hard": Difficulty.HARD
     }
     
-    print("")
-    print("SELECT YOUR DIFFICULTY:")
-    print("")
-    print("1. FACIL")
-    print("2. MEDIO")
-    print("3. DIFICIL")
-    print("")
-    user_input = (input(">: ")).lower() # Nos aseguramos de poner en minuscula la entrada del usuario.
+    print("\nSELECT YOUR DIFFICULTY:")
+    print("1. EASY")
+    print("2. MEDIUM")
+    print("3. HARD")
     
-    if user_input in dificultad:
-        return dificultad[user_input]
+    user_input = input(">: ").lower()
+    
+    if user_input in difficulty:
+        return difficulty[user_input]
     else:
-        print("Opción inválida. Intenta nuevamente.")
+        print("Invalid option. Try again.")
         return obtain_difficulty()
-    
-def generate_txt():
-    pass
 
-def show_menu():
-    
-    T = "Guest Your Number "
-    head = pyfiglet.figlet_format(T, font="banner3", justify = "center", width = 110)
-    print(head)
-    
+def generate_scores_txt(name: str, trials: int, difficulty: str) -> None:
+    date_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+    score_entry = {
+        "name": name,
+        "trials": trials,
+        "date": date_time,
+        "difficulty": difficulty.value
+    }
+
+    scores = []
+
+    if os.path.exists("scores.txt"):
+        with open("scores.txt", "r") as file:
+            for line in file:
+                entry = line.strip().split(",")
+                if len(entry) == 4:
+                    score = {
+                        "name": entry[0],
+                        "trials": int(entry[1]),
+                        "date": entry[2],
+                        "difficulty": entry[3]
+                    }
+                    scores.append(score)
+
+    scores.append(score_entry)
+    scores = sorted(scores, key=lambda x: x["trials"])
+
+    with open("scores.txt", "w") as file:
+        for score in scores:
+            file.write(f"{score['name']},{score['trials']},{score['date']},{score['difficulty']}\n")
+
+    print("Scores:")
+    print("-------")
+    print("Name\t\t\tTrials\t\t\tDate\t\t\tDifficulty")
+    print("-" * 90)
+    for score in scores:
+        print(f"{score['name']}\t\t\t{score['trials']}\t\t\t{score['date']}\t{score['difficulty']}")
+
+def select_menu_option() -> MenuOption:
     menu = {
-        "JUGAR": Menu.JUGAR,
-        "SCORES": Menu.SCORES,
-        "CREDITS": Menu.CREDITS,
-        "OUT": Menu.OUT
+        "play": MenuOption.PLAY,
+        "scores": MenuOption.SCORES,
+        "credits": MenuOption.CREDITS,
+        "quit": MenuOption.QUIT
     }
     
-    print("")
-    print("SELECT YOUR OPTION:")
-    print("")
-    print("1. JUGAR")
+    print("\nSELECT YOUR OPTION:")
+    print("1. PLAY")
     print("2. SCORES")
     print("3. CREDITS")
-    print("4. OUT.")
-    print("")
-    menu_input = (input(">: ")).lower()
+    print("4. QUIT")
+    
+    menu_input = input(">: ").lower()
     
     if menu_input in menu:
         return menu[menu_input]
     else:
-        print("Opción inválida. Intenta nuevamente.")
-        return show_menu()
-    
+        print("Invalid option. Try again.")
+        return select_menu_option()
 
-#Funcion principal
-def main():
-    show_menu()
-    level = obtain_difficulty()
-    game = GuestYourNumer(level)
-    game.run()
+def show_credits() -> None:
+    T1 = "Team International"
+    T2 = "Top Gun Lab"
+    T3 = "BY"
+    T4 = "Carlos A. Posada"
+    T5 = "Universidad de ANtioquia"
+    head1 = pyfiglet.figlet_format(T1, font="digital", justify="center", width=100)
+    head2 = pyfiglet.figlet_format(T2, font="bulbhead", justify="center", width=100)
+    head3 = pyfiglet.figlet_format(T3, font="digital", justify="center", width=100)
+    head4 = pyfiglet.figlet_format(T4, font="digital", justify="center", width=100)
+    head5 = pyfiglet.figlet_format(T5, font="digital", justify="center", width=100)
+    print(head1)
+    print(head2)
+    print(head3)
+    print(head4)
+    print(head5)
+    main()
+
+def show_quit() -> None:
+    T = "See you Again"
+    head = pyfiglet.figlet_format(T, font="isometric1", justify="center", width=100)
+    print(head) 
+    
+def main() -> None:
+    
+    option_menu = select_menu_option()
+    
+    if option_menu == MenuOption.PLAY:
+        level = obtain_difficulty()
+        game = GuessYourNumber(level)
+        game.run()
+    elif option_menu == MenuOption.SCORES:
+        generate_scores_txt()
+    elif option_menu == MenuOption.CREDITS:
+        show_credits()
+    elif option_menu == MenuOption.QUIT:
+        show_quit()
+    else:
+        print("Invalid option. Try again.")
 
 if __name__ == '__main__':
     main()
