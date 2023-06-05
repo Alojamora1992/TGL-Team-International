@@ -18,7 +18,7 @@ def sumatoria(n):
 def reverse(string):
     
     if string: 
-        return string[-1] + reverse[:-1]    
+        return string[-1] + reverse(string[:-1])    
     else:
         #caso base
         return ""
@@ -36,4 +36,5 @@ def hanoi (disks: int, source:int, helper: int, target: int):
         print(f"Paso: Mover ficha de {source} -> {target}")
         hanoi(disks -1, source =  helper, helper = source, target = target)
 
-print(hanoi(4, source = 1, helper = 2, target = 3))
+#print(hanoi(4, source = 1, helper = 2, target = 3))
+print(reverse("carlos"))
