@@ -22,6 +22,7 @@ def is_prime(number: int) -> str:
             return False
     
     return True
+
 def request_data() -> int:
     while True:
         try:
